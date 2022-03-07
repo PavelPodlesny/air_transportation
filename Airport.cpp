@@ -1,11 +1,12 @@
 #include "Airport.h"
 
 Airport::Airport(string name, vector<OrdinaryCargo>& ordinary_cargo, vector<UrgentCargo>& urgent_cargo,
-	vector<Airplane>& airplanes){
+	vector<Airplane>& airplanes, vector<pair<string, int>>& other_airports){
 	this->name = name;
 	this->ordinary_cargo = ordinary_cargo;
 	this->urgent_cargo = urgent_cargo;
 	this->airplanes = airplanes;
+	this->other_airports = other_airports;
 }
 
 string Airport::get_name() const { return name; }
@@ -22,7 +23,9 @@ void Airport::set_list_urgent_cargo(vector<UrgentCargo>& ur_cargo) { urgent_carg
 
 void Airport::set_list_airplanes(vector<Airplane>& list_airplanes) { airplanes = list_airplanes; }
 
-void Airport::add_cargo(int& global_cargo_count, time_t& global_time){
+void Airport::set_list_other_airports(vector<pair<string, int>>& list_other_airports) { other_airports = list_other_airports; }
+
+void Airport::add_cargo(int& global_cargo_count, time_t global_time){
 	srand(time(NULL));
 	string arrival_airport;
 	double cargo_weight;
@@ -31,7 +34,7 @@ void Airport::add_cargo(int& global_cargo_count, time_t& global_time){
 	int count_ur_cargo = count_cargo - count_or_cargo;
 	for (int i = 0; i < count_or_cargo; ++i) {
 		cargo_weight = (rand() % 61) + 40;
-		arrival_airport = "OTH"; //other
+		arrival_airport = other_airports[rand()%(other_airports.size())].first; //other
 		OrdinaryCargo cargo(global_cargo_count, cargo_weight,
 			name, arrival_airport, name, global_time);
 		ordinary_cargo.push_back(cargo);
@@ -40,8 +43,8 @@ void Airport::add_cargo(int& global_cargo_count, time_t& global_time){
 	time_t time_deadline;
 	for (int i = 0; i < count_ur_cargo; ++i) {
 		cargo_weight = (rand() % 61) + 40;
-		arrival_airport = "OTH";
-		time_deadline = (time_t)(3600 * (rand() % 21 + 4));
+		arrival_airport = other_airports[rand() % (other_airports.size())].first;
+		time_deadline = (time_t)(3600 * (rand() % 3 + 4));
 		UrgentCargo cargo(global_cargo_count, cargo_weight,
 			name, arrival_airport, name, global_time,
 			time_deadline);
@@ -66,7 +69,7 @@ void Airport::cargo_to_plane(){
 				if ((payload - mass) >= 0) {
 					(*i).add_cargo((*uc));
 					payload -= mass;
-					(*uc).erase_();
+					(*uc).change_erase_value();
 				}
 				else overflow = true;
 			}
@@ -85,7 +88,7 @@ void Airport::cargo_to_plane(){
 					if ((payload - mass) >= 0) {
 						(*i).add_cargo((*oc));
 						payload -= mass;
-						(*oc).erase_();
+						(*oc).change_erase_value();
 					}
 					else overflow = true;
 				}
@@ -98,6 +101,7 @@ void Airport::cargo_to_plane(){
 	//airplanes.erase(std::remove_if(airplanes.begin(), airplanes.end(), pred_for_plane), airplanes.end());
 	//if the airplane took off, move it to "plane_in_flight" list
 }
+void Airport::add_airplane(Airplane& plane) { airplanes.push_back(plane); }
 /*void Airport::add_flight(Airplane& plane, string arr_ap, time_t current_time) {
 	time_t time_in_flight = (time_t)(4 * 3600), time_in_arr_ap = (time_t)(3600);
 	int plane_num = plane.get_num();

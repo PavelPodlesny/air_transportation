@@ -41,7 +41,7 @@ string OrdinaryCargo::get_curr_ap() const { return curr_ap; }
 
 time_t OrdinaryCargo::get_time() const {return time_;}
 
-bool OrdinaryCargo::get_erase() const { return erase; }
+bool OrdinaryCargo::get_erase_value() const { return erase; }
 
 void OrdinaryCargo::change_curr_ap(string & ap) // ap == airport
 {
@@ -51,7 +51,11 @@ void OrdinaryCargo::change_curr_ap(string & ap) // ap == airport
 	else
 		curr_ap = new_ap;
 }
-void OrdinaryCargo::erase_() { erase = true; }
+
+void OrdinaryCargo::change_erase_value() { erase = true; }
+
+string OrdinaryCargo::check() const { return "parent"; }
+
 /*void OrdinaryCargo::print_class() {
 	char t[26];
 	ctime_s(t, sizeof t, &time_);
@@ -90,4 +94,8 @@ UrgentCargo::UrgentCargo(int num, double weight, string dep_ap, string arr_ap, s
 
 time_t UrgentCargo::get_deadline() const { return deadline; }
 
-bool pred(OrdinaryCargo& cargo) { return cargo.get_erase(); }
+UrgentCargo::~UrgentCargo() {}
+string UrgentCargo::check() const { return "child"; }
+;
+
+bool pred(OrdinaryCargo& cargo) { return cargo.get_erase_value(); }

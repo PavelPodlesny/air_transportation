@@ -5,18 +5,18 @@
 
 class OrdinaryCargo
 {
-protected:
+private:
 	int num;
-	double weight;
+	double weight;//kg
 	string dep_ap, arr_ap, curr_ap; // departure airport, arrival -/-, current -/-
-	time_t time_;
-	bool erase;// data and time when cargo is arrived to airport
+	time_t time_;// data and time when cargo is arrived to airport
+	bool erase; // i need this value to know whether a object will be deleted
 public:
 	// constructor and destructor
 	OrdinaryCargo(int num = 0, double weight = 0,
 		string dep_ap = "", string arr_ap = "", string curr_ap = "",
 		time_t time_ = 0, bool erase = false);
-	~OrdinaryCargo();
+	virtual ~OrdinaryCargo();
 	// methods of getting of the fields
 	int get_num() const;
 	double get_weight() const;
@@ -24,13 +24,11 @@ public:
 	string  get_arr_ap() const;
 	string  get_curr_ap() const;
 	time_t get_time() const;
-	bool get_erase() const;
+	bool get_erase_value() const;
 	// methods of changing of the fields
 	void change_curr_ap(string &ap);
-	void erase_();
-	// metod for print 
-	//void print_class();
-	//
+	void change_erase_value();
+	virtual string check() const; // parent or child class?
 	bool operator< (OrdinaryCargo const& c);
 	bool operator> (OrdinaryCargo const& c);
 	bool operator== (OrdinaryCargo const& c);
@@ -40,10 +38,12 @@ class UrgentCargo : public OrdinaryCargo {
 private:
 	time_t deadline;
 public:
-	UrgentCargo( int num = 0, double weight = 20.0,
-		string dep_ap = "SVO", string arr_ap = "MMK", string curr_ap = "SVO",
-		time_t time_ = time(0), time_t deadline = (time(0) + (time_t)(10 * 3600)), bool erase = false);
+	UrgentCargo( int num = 0, double weight = 0,
+		string dep_ap = "", string arr_ap = "", string curr_ap = "",
+		time_t time_ = 0, time_t deadline = 0, bool erase = false);
+	~UrgentCargo();
 	time_t get_deadline() const;
+	string check() const;
 };
 bool pred(OrdinaryCargo& cargo);
 #endif

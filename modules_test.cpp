@@ -22,6 +22,9 @@ void Cargo_test() {
     // calling the default consructor
     time_t arrival_time = time(0) + (time_t)(3600), deadline = arrival_time + (time_t)(9 * 3600);
     UrgentCargo c(1, 25, "DME", "JFK", "ORY", arrival_time, deadline);
+    assert(c.check() == "child");
+    OrdinaryCargo* ptr = &c;
+    assert(ptr->check() == "child");
     assert(c.get_num() == 1);
     assert(c.get_weight() == 25);
     string str = c.get_dep_ap() + c.get_arr_ap() + c.get_curr_ap();
@@ -32,11 +35,12 @@ void Cargo_test() {
     assert((str = c.get_curr_ap()) == "DME");
     new_curr_ap = "ovb"; c.change_curr_ap(new_curr_ap);
     OrdinaryCargo c1(2, 10, "DME", "JFK", "DME", arrival_time, false);
+    assert(c1.check() == "parent");
     assert((OrdinaryCargo)c > c1);
     assert(!((OrdinaryCargo)c < c1));
     assert(!((OrdinaryCargo)c == c1));
-    assert(c1.get_erase() == false);
-    c1.erase_();
+    assert(c1.get_erase_value() == false);
+    c1.change_erase_value();
     assert(pred(c1) == true);
     int GlobalCargoCount = 0;
     time_t GlobalTime = time(0);
@@ -60,7 +64,7 @@ void Airplane_test() {
         urgent_cargo.push_back(u_cargo);
     }
     Airplane airbus(51, 5000, ordinary_cargo, urgent_cargo,
-        "SVO", "MMK", false);
+        "SVO", "MMK", "MMK", false, false);
     assert(airbus.get_num() == 51);
     assert(airbus.get_capacity() == 5000);
     assert(airbus.get_home_ap() + airbus.get_dest_ap() == "SVOMMK");
@@ -83,14 +87,15 @@ void Airport_test() {
     vector<OrdinaryCargo> ordinary_cargo;
     vector<UrgentCargo> urgent_cargo;
     vector<Airplane> planes;
-    Airport SVO("SVO", ordinary_cargo, urgent_cargo, planes);
+    vector<pair<string, int>> airports = { { "MMK", 2 }, { "OVB", 4 } };
+    Airport SVO("SVO", ordinary_cargo, urgent_cargo, planes, airports);
     SVO.add_cargo(Global_cargo_count, Global_Time);
     Global_Time += (time_t)(3600);
     SVO.add_cargo(Global_cargo_count, Global_Time);
     assert(((size_t)Global_cargo_count-1) == (SVO.get_list_ordinary_cargo()).size() +
         (SVO.get_list_urgent_cargo()).size());
     Airplane airbus(51, 300, ordinary_cargo, urgent_cargo,
-        "SVO", "OTH", false);
+        "SVO", "MMK", "MMK", false, false);
     assert((airbus.get_or_cargo_list()).size() +
         (airbus.get_ur_cargo_list()).size() == 0);
     planes.push_back(airbus);
