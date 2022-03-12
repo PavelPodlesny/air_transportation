@@ -1,32 +1,29 @@
 #include "Airport.h"
 
-Airport::Airport(string name, vector<OrdinaryCargo>& ordinary_cargo, vector<UrgentCargo>& urgent_cargo,
+Airport::Airport(string name, vector<OrdinaryCargo>& cargo,
 	vector<Airplane>& airplanes, vector<pair<string, int>>& other_airports){
-	this->name = name;
-	this->ordinary_cargo = ordinary_cargo;
-	this->urgent_cargo = urgent_cargo;
+	this->name = (check_ap(name)) ? (name) : ("invalid");
+	this->cargo = cargo;
 	this->airplanes = airplanes;
 	this->other_airports = other_airports;
 }
 
 string Airport::get_name() const { return name; }
 
-vector<OrdinaryCargo> const& Airport::get_list_ordinary_cargo() { return ordinary_cargo; }
+vector<OrdinaryCargo> const& Airport::get_cargo_list() { return cargo; }
 
-vector<UrgentCargo> const& Airport::get_list_urgent_cargo() { return urgent_cargo; }
+vector<Airplane> const& Airport::get_airplanes_list() { return airplanes; }
 
-vector<Airplane> const& Airport::get_list_airplanes() { return airplanes; }
+vector<pair<string, int>> const& Airport::get_other_airports_list() { return other_airports; }
 
-void Airport::set_list_ordinary_cargo(vector<OrdinaryCargo>& or_cargo){ordinary_cargo = or_cargo;}
+void Airport::set_cargo_list(vector<OrdinaryCargo>& cargo_) { cargo = cargo_; }
 
-void Airport::set_list_urgent_cargo(vector<UrgentCargo>& ur_cargo) { urgent_cargo = ur_cargo; }
+void Airport::set_airplanes_list(vector<Airplane>& airplanes_) { airplanes = airplanes_; }
 
-void Airport::set_list_airplanes(vector<Airplane>& list_airplanes) { airplanes = list_airplanes; }
-
-void Airport::set_list_other_airports(vector<pair<string, int>>& list_other_airports) { other_airports = list_other_airports; }
+void Airport::set_other_airports_list(vector<pair<string, int>>& other_airports_) { other_airports = other_airports_; }
 
 void Airport::add_cargo(int& global_cargo_count, time_t global_time){
-	srand(time(NULL));
+	srand(time(0));
 	string arrival_airport;
 	double cargo_weight;
 	int count_cargo = (rand() % 5) + 1;
@@ -35,9 +32,9 @@ void Airport::add_cargo(int& global_cargo_count, time_t global_time){
 	for (int i = 0; i < count_or_cargo; ++i) {
 		cargo_weight = (rand() % 61) + 40;
 		arrival_airport = other_airports[rand()%(other_airports.size())].first; //other
-		OrdinaryCargo cargo(global_cargo_count, cargo_weight,
+		OrdinaryCargo new_cargo(global_cargo_count, cargo_weight,
 			name, arrival_airport, name, global_time);
-		ordinary_cargo.push_back(cargo);
+		cargo.push_back(new_cargo);
 		global_cargo_count++;
 	}
 	time_t time_deadline;
@@ -45,61 +42,12 @@ void Airport::add_cargo(int& global_cargo_count, time_t global_time){
 		cargo_weight = (rand() % 61) + 40;
 		arrival_airport = other_airports[rand() % (other_airports.size())].first;
 		time_deadline = (time_t)(3600 * (rand() % 3 + 4));
-		UrgentCargo cargo(global_cargo_count, cargo_weight,
+		UrgentCargo new_cargo(global_cargo_count, cargo_weight,
 			name, arrival_airport, name, global_time,
 			time_deadline);
-		urgent_cargo.push_back(cargo);
+		cargo.push_back(new_cargo);
 		global_cargo_count++;
 	}
-
-}
-
-void Airport::cargo_to_plane(){
-	vector<Airplane>::iterator i = airplanes.begin(), end = airplanes.end();
-	for (i; i != end; ++i) {
-		double payload = ((*i).get_capacity()), original_payload = payload;
-		string destination_airport = (*i).get_dest_ap(), arrival_aiport;
-		bool overflow = false;
-		sort(urgent_cargo.rbegin(), urgent_cargo.rend());
-		vector<UrgentCargo>::iterator uc = urgent_cargo.begin(), uc_end = urgent_cargo.end();
-		while (uc != uc_end && !overflow) {
-			arrival_aiport = (*uc).get_arr_ap();
-			if (destination_airport == arrival_aiport) {
-				double mass = (*uc).get_weight();
-				if ((payload - mass) >= 0) {
-					(*i).add_cargo((*uc));
-					payload -= mass;
-					(*uc).change_erase_value();
-				}
-				else overflow = true;
-			}
-			++uc;
-		}
-		urgent_cargo.erase(std::remove_if(urgent_cargo.begin(), urgent_cargo.end(), pred), urgent_cargo.end()); //!
-		if (overflow == true && payload <= (0.25 * original_payload)) { (*i).in_flight_(1);/*start flight*/ }
-		else {
-			overflow = false;
-			sort(ordinary_cargo.rbegin(), ordinary_cargo.rend());
-			vector<OrdinaryCargo>::iterator oc = ordinary_cargo.begin(), oc_end = ordinary_cargo.end();
-			while (oc != oc_end && !overflow) {
-				arrival_aiport = (*oc).get_arr_ap();
-				if (destination_airport == arrival_aiport) {
-					double mass = (*oc).get_weight();
-					if ((payload - mass) >= 0) {
-						(*i).add_cargo((*oc));
-						payload -= mass;
-						(*oc).change_erase_value();
-					}
-					else overflow = true;
-				}
-				++oc;
-			}
-			ordinary_cargo.erase(std::remove_if(ordinary_cargo.begin(), ordinary_cargo.end(), pred), ordinary_cargo.end());
-			if (payload <= (0.25 * original_payload)) { (*i).in_flight_(1);/*start flight*/ }
-		}
-	}
-	//airplanes.erase(std::remove_if(airplanes.begin(), airplanes.end(), pred_for_plane), airplanes.end());
-	//if the airplane took off, move it to "plane_in_flight" list
 }
 void Airport::add_airplane(Airplane& plane) { airplanes.push_back(plane); }
 /*void Airport::add_flight(Airplane& plane, string arr_ap, time_t current_time) {

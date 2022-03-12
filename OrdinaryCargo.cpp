@@ -46,15 +46,13 @@ bool OrdinaryCargo::get_erase_value() const { return erase; }
 void OrdinaryCargo::change_curr_ap(string & ap) // ap == airport
 {
 	string new_ap = ap;
-	if (!check_ap(new_ap))
-		std::cerr << "change_curr_ap|invalid string" << std::endl;
-	else
-		curr_ap = new_ap;
+	if (!check_ap(new_ap)) std::cerr << "OrdinaryCargo|change_curr_ap|invalid string" << std::endl;
+	else curr_ap = new_ap;
 }
 
 void OrdinaryCargo::change_erase_value() { erase = true; }
 
-string OrdinaryCargo::check() const { return "parent"; }
+string OrdinaryCargo::check() const { return "ordinary"; }
 
 /*void OrdinaryCargo::print_class() {
 	char t[26];
@@ -62,14 +60,14 @@ string OrdinaryCargo::check() const { return "parent"; }
 	string str = dep_ap + " " + curr_ap + " " + arr_ap;
 	cout << num << " " << weight << " " << str << " "<< t << endl;
 }*/
-bool OrdinaryCargo::operator< (OrdinaryCargo const& c) {
+bool OrdinaryCargo::operator< (OrdinaryCargo const& c) const {
 	if (weight < c.weight)
 		return true;
 	else
 		return false;
 }
 
-bool OrdinaryCargo::operator>(OrdinaryCargo const& c)
+bool OrdinaryCargo::operator>(OrdinaryCargo const& c) const
 {
 	if (weight > c.weight)
 		return true;
@@ -77,7 +75,7 @@ bool OrdinaryCargo::operator>(OrdinaryCargo const& c)
 		return false;
 }
 
-bool OrdinaryCargo::operator==(OrdinaryCargo const& c)
+bool OrdinaryCargo::operator==(OrdinaryCargo const& c) const
 {
 	if (weight == c.weight)
 		return true;
@@ -95,7 +93,5 @@ UrgentCargo::UrgentCargo(int num, double weight, string dep_ap, string arr_ap, s
 time_t UrgentCargo::get_deadline() const { return deadline; }
 
 UrgentCargo::~UrgentCargo() {}
-string UrgentCargo::check() const { return "child"; }
-;
-
+string UrgentCargo::check() const { return "urgent"; }
 bool pred(OrdinaryCargo& cargo) { return cargo.get_erase_value(); }

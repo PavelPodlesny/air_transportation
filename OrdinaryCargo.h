@@ -29,9 +29,9 @@ public:
 	void change_curr_ap(string &ap);
 	void change_erase_value();
 	virtual string check() const; // parent or child class?
-	bool operator< (OrdinaryCargo const& c);
-	bool operator> (OrdinaryCargo const& c);
-	bool operator== (OrdinaryCargo const& c);
+	bool operator< (OrdinaryCargo const& c) const;
+	bool operator> (OrdinaryCargo const& c) const;
+	bool operator== (OrdinaryCargo const& c) const;
 
 };
 class UrgentCargo : public OrdinaryCargo {

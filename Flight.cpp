@@ -20,7 +20,7 @@ time_t Flight::get_arr_time() const { return arr_time; }
 
 int Flight::get_airplane_num() const { return airplane_num; }
 
-time_t Flight::time_in_flight() const { return arr_time - dep_time; }
+//time_t Flight::time_in_flight() const { return arr_time - dep_time; }
 
 bool Flight::get_erase_value() { return erase; }
 
