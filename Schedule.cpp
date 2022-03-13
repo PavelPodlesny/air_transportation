@@ -51,21 +51,28 @@ void Schedule::check_arrival_time(){
 	//urgent_cargo.erase(std::remove_if(urgent_cargo.begin(), urgent_cargo.end(), pred), urgent_cargo.end());
 }
 
-void Schedule::print(){
+void Schedule::print() {
 	int count = 1;
 	cout << setw(9) << left << "Flight #";
-	cout << setw(18) << right << "Departure airport";
-	cout << setw(16) << right << "Arrival airport";
-	cout << setw(30) << right << "Departure time";
-	cout << setw(30) << right << "Arrival time";
-	cout << setw(2) << right << "Plane number" << endl;
+	cout << setw(19) << "Departure airport";
+	cout << setw(15) << right << "Arrival airport" << " ";
+	cout << setw(5) << " " << "Departure time" << setw(5) << " ";
+	cout << "	";
+	cout << setw(6) << " " << "Arrival time" << setw(6) << " ";
+	cout << "	";
+	cout << setw(12) << "Plane number" << endl;
+	char buf[26];
 	for (auto i = schedule.begin(); i != schedule.end(); ++i) {
 		cout << setw(9) << left << count;
-		cout << setw(18) << right << (*i).get_dep_ap();
-		cout << setw(16) << right << (*i).get_arr_ap();
-		cout << setw(30) << right << (*i).get_dep_time();
-		cout << setw(30) << right << (*i).get_arr_time();
-		cout << setw(2) << right << (*i).get_airplane_num() << endl;
+		cout << setw(8) << " " << (*i).get_dep_ap() << setw(8) << " ";
+		cout << setw(6) << " " << (*i).get_arr_ap() << setw(7) << " ";
+		time_t time_ = (*i).get_dep_time();
+		ctime_s(buf, sizeof(buf), &time_); buf[24] = '\0';
+		cout << setw(24) << buf << "	";
+		time_ = (*i).get_arr_time();
+		ctime_s(buf, sizeof(buf), &time_); buf[24] = '\0';
+		cout << setw(24) << buf << "	";
+		cout << setw(5) << " " << (*i).get_airplane_num() << setw(5) << " " <<endl;
 		count++;
 	}
 }
