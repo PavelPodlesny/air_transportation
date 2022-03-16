@@ -22,8 +22,8 @@ int Flight::get_airplane_num() const { return airplane_num; }
 
 //time_t Flight::time_in_flight() const { return arr_time - dep_time; }
 
-bool Flight::get_erase_value() { return erase; }
+bool Flight::get_erase_value() const { return erase; }
 
 void Flight::change_erase_value() { erase = true; }
 
-bool pred_for_flight(Flight& flight) { return flight.get_erase_value(); }
+bool pred_for_flight(Flight const& flight) { return flight.get_erase_value(); }

@@ -7,18 +7,18 @@ class Airport
 //friend  class Schedule;
 private:
 	string name;
-	vector<OrdinaryCargo> cargo;
+	vector<OrdinaryCargo*> cargo;
 	vector<Airplane> airplanes;
 	vector<pair<string, int>> other_airports;
 public:
 	// add methods to erase cargo and plane, when plane has travel
-	Airport(string name, vector<OrdinaryCargo>& cargo,vector<Airplane>& airplanes,
+	Airport(string name, vector<OrdinaryCargo*>& cargo,vector<Airplane>& airplanes,
 		vector<pair<string, int>>& other_airports);
 	string get_name() const;
-	vector<OrdinaryCargo> const& get_cargo_list(); //unsafe method!
-	vector<Airplane> const& get_airplanes_list();//unsafe method!
-	vector<pair<string, int>> const& get_other_airports_list();
-	void set_cargo_list(vector<OrdinaryCargo> & cargo_);
+	vector<OrdinaryCargo*> const& get_cargo_list () const; //unsafe method!
+	vector<Airplane> const& get_airplanes_list() const;//unsafe method!
+	vector<pair<string, int>> const& get_other_airports_list() const;
+	void set_cargo_list(vector<OrdinaryCargo*> & cargo_);
 	void set_airplanes_list(vector<Airplane>& airplanes_);
 	void set_other_airports_list(vector<pair<string, int>>& other_airports_);
 

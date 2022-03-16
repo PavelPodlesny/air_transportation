@@ -17,12 +17,13 @@ public:
 	void add_cargo(int& global_cargo_count, time_t global_time); // in final version change int to void 
 	void sending_planes(time_t global_time);
 	void landing_plane(Airplane& plane);
-	void check_arrival_time();
+	void wait_one_hour();
 	void print();
 	vector<Airport> const& get_airports_list();
 	vector<Flight> const& get_flights_list();
 	vector<pair<Airplane, time_t>> const& get_planes_in_air_list();
 	
 };
+bool compare(OrdinaryCargo* i, OrdinaryCargo* j);
 #endif
 

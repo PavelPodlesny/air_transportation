@@ -19,6 +19,15 @@
     string str = dep_ap + " " + curr_ap + " " + arr_ap + " " + time_;
     cout << num << " " << weight << " " << str << endl;
 }*/
+void Test() {
+    OrdinaryCargo ordinary;
+    UrgentCargo urgent;
+    OrdinaryCargo* ref = &ordinary;
+    cout << (*ref).check() << endl;
+    ref = &urgent;
+    cout << (*ref).check();
+}
+
 void count_planes_on_land_and_in_air(Schedule& schedule, time_t* Global_time) {
     char buf[100];
     ctime_s(buf, sizeof(buf), Global_time);
@@ -75,7 +84,7 @@ void Cargo_test() {
     assert(!((OrdinaryCargo)c == c1));
     assert(c1.get_erase_value() == false);
     c1.change_erase_value();
-    assert(pred(c1) == true);
+    assert(pred(&c1) == true);
     int GlobalCargoCount = 0;
     time_t GlobalTime = time(0);
     cout << "Cargo_test: OK" << endl;
@@ -90,10 +99,10 @@ void Flight_test() {
     cout << "Flight_test: OK" << endl;
 }
 void Airplane_test() {
-    vector<OrdinaryCargo> arr_cargo;
+    vector<OrdinaryCargo*> arr_cargo;
     for (int i = 1; i <= 10; ++i) {
-        OrdinaryCargo cargo(i, (double)(i) * 10, "SVO", "MMK", "SVO", 0);
-        UrgentCargo u_cargo(i + 1, (double)(i) * 10, "SVO", "MMK", "SVO", 0,
+        OrdinaryCargo* cargo = new OrdinaryCargo(i, (double)(i) * 10, "SVO", "MMK", "SVO", 0);
+        UrgentCargo* u_cargo = new UrgentCargo(i + 1, (double)(i) * 10, "SVO", "MMK", "SVO", 0,
             24 * 3600);
         arr_cargo.push_back(cargo);
         arr_cargo.push_back(u_cargo);
@@ -105,21 +114,22 @@ void Airplane_test() {
     assert(!airbus.get_flight_status());
     airbus.change_flight_status(1);
     assert(airbus.get_flight_status());
-    OrdinaryCargo cargo;
+    OrdinaryCargo* cargo = new OrdinaryCargo;
     double free_payload = airbus.get_capacity();
-    assert(airbus.add_cargo(free_payload, cargo.get_weight(), cargo));
-    assert(free_payload == airbus.get_capacity() - cargo.get_weight());
+    assert(airbus.add_cargo(free_payload, cargo->get_weight(), cargo));
+    assert(free_payload == airbus.get_capacity() - cargo->get_weight());
     assert((airbus.get_cargo_list()).size() == 21);
+    for (auto i = airbus.get_cargo_list().begin(); i != airbus.get_cargo_list().end(); ++i) { delete (*i); }
     airbus.unload_cargo();
     assert((airbus.get_cargo_list()).size() == 0);
     assert(airbus.flight_direction() == "direct");
     assert(pred_for_plane(airbus));
-    cout << "Flight_test: OK" << endl;
+    cout << "Airplane_test: OK" << endl;
 }
 void Airport_test() {
     time_t Global_Time = time(NULL);
     int Global_cargo_count = 1;
-    vector<OrdinaryCargo> arr_cargo;
+    vector<OrdinaryCargo*> arr_cargo;
     vector<Airplane> planes;
     vector<pair<string, int>> airports = { { "MMK", 2 }, { "OVB", 4 } };
     Airport SVO("SVO", arr_cargo, planes, airports);
@@ -131,22 +141,23 @@ void Airport_test() {
     assert((airbus.get_cargo_list()).size() == 0);
     SVO.add_airplane(airbus);
     assert(SVO.get_airplanes_list().size()==1);
+    for (auto i = SVO.get_cargo_list().begin(); i != SVO.get_cargo_list().end(); ++i) delete (*i);
     cout << "Airport_test: OK" << endl << endl;
 }
 void Schedule_test() {
     cout << "'Schedule test' is starting..." << endl;
     time_t Global_Time = time(NULL);
     int Global_cargo_count = 1;
-    vector<OrdinaryCargo> cargo;
+    vector<OrdinaryCargo*> cargo;
     //create two new airports
     Airplane airbus_1(1, 300, cargo, "SVO", "MMK", "MMK", false);
     vector<Airplane> planes{airbus_1};
-    vector<pair<string, int>> airports{{ "MMK", 2 }};
+    vector<pair<string, int>> airports{{ "MMK", 5 }};
     Airport SVO("SVO", cargo, planes, airports);
     planes.clear(); airports.clear();
     //
     Airplane airbus_2(2, 400, cargo, "MMK", "SVO", "SVO", false);
-    planes.push_back(airbus_2); airports.push_back({"SVO", 2});
+    planes.push_back(airbus_2); airports.push_back({"SVO", 5});
     Airport MMK("MMK", cargo, planes, airports);
     // crtate schedule
     vector<Airport> AirPorts{ SVO, MMK }; vector<Flight>flight_list;
@@ -163,28 +174,38 @@ void Schedule_test() {
     count_planes_on_land_and_in_air(simple_schedule, &Global_Time);
     // program is working correct till this row 
     // check number of cargo on land and in air
-    Global_Time += 3600; simple_schedule.add_cargo(Global_cargo_count, Global_Time);
-    simple_schedule.check_arrival_time();
-    Global_Time += 3600; simple_schedule.add_cargo(Global_cargo_count, Global_Time);
     cout << "|Schedule|" << endl;
     simple_schedule.print();
-    cout << "|After 2 hours, before landing|" << endl;
+    cout << "Wait for 4 hours" << endl;
+    for (int i = 0; i < 4; ++i) {
+        Global_Time += 3600; simple_schedule.add_cargo(Global_cargo_count, Global_Time);
+        simple_schedule.wait_one_hour();
+    }
+    Global_Time += 3600; simple_schedule.add_cargo(Global_cargo_count, Global_Time);
+    cout << "|After 5 hours, before landing|" << endl;
     count_cargo_on_land_and_in_air(simple_schedule, Global_cargo_count);
     count_planes_on_land_and_in_air(simple_schedule, &Global_Time);
-    simple_schedule.check_arrival_time();
-    cout << "|Landing|" << endl;
+    simple_schedule.wait_one_hour();
+    cout << "|After landing|" << endl;
     count_cargo_on_land_and_in_air(simple_schedule, Global_cargo_count);
     count_planes_on_land_and_in_air(simple_schedule, &Global_Time);
+    for (auto j = simple_schedule.get_airports_list().begin(); j != simple_schedule.get_airports_list().end(); ++j){
+        for (auto i = (*j).get_cargo_list().begin(); i != (*j).get_cargo_list().end(); ++i) delete (*i);
+    }
 }
 int main()
 {
-#define CARGO_DEBUG
-#ifdef CARGO_DEBUG
+//#define TEST
+#define DEBUG
+#ifdef DEBUG
     Cargo_test();
     Flight_test();
     Airplane_test();
     Airport_test();
     Schedule_test();
+#endif
+#ifdef TEST
+    Test();
 #endif
 
     

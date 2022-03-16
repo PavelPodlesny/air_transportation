@@ -29,6 +29,8 @@ public:
 	void change_curr_ap(string &ap);
 	void change_erase_value();
 	virtual string check() const; // parent or child class?
+	//virtual bool is_delayed();
+	//virtual time_t get_deadline() const;
 	bool operator< (OrdinaryCargo const& c) const;
 	bool operator> (OrdinaryCargo const& c) const;
 	bool operator== (OrdinaryCargo const& c) const;
@@ -42,9 +44,10 @@ public:
 		string dep_ap = "", string arr_ap = "", string curr_ap = "",
 		time_t time_ = 0, time_t deadline = 0, bool erase = false);
 	~UrgentCargo();
+	bool is_delayed();
 	time_t get_deadline() const;
 	string check() const;
 };
-bool pred(OrdinaryCargo& cargo);
+bool pred(OrdinaryCargo* cargo);
 #endif
 

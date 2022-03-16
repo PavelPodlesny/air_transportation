@@ -92,6 +92,12 @@ UrgentCargo::UrgentCargo(int num, double weight, string dep_ap, string arr_ap, s
 
 time_t UrgentCargo::get_deadline() const { return deadline; }
 
+bool UrgentCargo::is_delayed(){
+	deadline -= 3600;
+	if (deadline == 0) return true;
+	else return false;
+}
+
 UrgentCargo::~UrgentCargo() {}
 string UrgentCargo::check() const { return "urgent"; }
-bool pred(OrdinaryCargo& cargo) { return cargo.get_erase_value(); }
+bool pred(OrdinaryCargo* cargo) { return (*cargo).get_erase_value(); }

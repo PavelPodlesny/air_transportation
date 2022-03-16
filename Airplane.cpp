@@ -1,6 +1,6 @@
 #include "Airplane.h"
 
-Airplane::Airplane(int num, double capacity, vector<OrdinaryCargo>& cargo,
+Airplane::Airplane(int num, double capacity, vector<OrdinaryCargo*> &cargo,
 	string home_ap, string other_ap, string dest_ap,
 	bool flight_status)
 {
@@ -26,9 +26,9 @@ string Airplane::get_other_ap() const { return other_ap; }
 
 bool Airplane::get_flight_status() const { return flight_status; }
 
-vector<OrdinaryCargo> const& Airplane::get_cargo_list() const {return cargo;}
+vector<OrdinaryCargo*> const& Airplane::get_cargo_list() const {return cargo;}
 
-bool Airplane::add_cargo(double& free_payload, double cargo_mass, OrdinaryCargo& new_cargo) {
+bool Airplane::add_cargo(double& free_payload, double cargo_mass, OrdinaryCargo* new_cargo) {
 	if (free_payload - cargo_mass >= 0) {
 		free_payload -= cargo_mass;
 		cargo.push_back(new_cargo);

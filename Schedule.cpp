@@ -29,6 +29,9 @@ void Schedule::add_cargo(int& global_cargo_count, time_t global_time){
 
 void Schedule::landing_plane(Airplane& plane){
 	plane.change_flight_status(0);
+	for (auto j = plane.get_cargo_list().begin(); j != plane.get_cargo_list().end(); ++j) {
+		delete (*j);
+	}
 	plane.unload_cargo();
 	auto i = airports.begin(), end = airports.end();
 	while (i != end && plane.get_dest_ap() != (*i).get_name()) ++i;
@@ -41,7 +44,7 @@ void Schedule::landing_plane(Airplane& plane){
 	}
 }
 
-void Schedule::check_arrival_time(){
+void Schedule::wait_one_hour(){
 	auto i = planes_in_air.begin(), end = planes_in_air.end();
 	for (i; i != end; ++i) {
 		(*i).second -= (time_t)(3600);
@@ -49,6 +52,14 @@ void Schedule::check_arrival_time(){
 	}
 	planes_in_air.erase(std::remove_if(planes_in_air.begin(), planes_in_air.end(), pred_for_plane_and_time), planes_in_air.end());
 	//urgent_cargo.erase(std::remove_if(urgent_cargo.begin(), urgent_cargo.end(), pred), urgent_cargo.end());
+	for (auto i = airports.begin(); i != airports.end(); ++i) {
+		for (auto j = (*i).get_cargo_list().begin(); j != (*i).get_cargo_list().end(); ++j) {
+			if ((*j)->check() == "urgent")
+				if ( ((UrgentCargo*)(*j))->is_delayed() ) {
+					cout << "The cargo #" << (*j)->get_num() << " is delayed (on land)!" << endl;
+				}
+		}
+	}
 }
 
 void Schedule::print() {
@@ -93,60 +104,59 @@ void Schedule::del_flight(int plane_num)
 void Schedule::sending_planes(time_t global_time) {
 	for(auto airport_ = airports.begin(); airport_!=airports.end(); ++airport_){
 	vector <Airplane> airplanes = (*airport_).get_airplanes_list();
-	vector <OrdinaryCargo> cargo = (*airport_).get_cargo_list();
+	vector <OrdinaryCargo*> cargo = (*airport_).get_cargo_list();
 	for (auto i = airplanes.begin(); i != airplanes.end(); ++i) {
 		double free_payload = ((*i).get_capacity()), initial_payload = free_payload;
 		string destination_airport = (*i).get_dest_ap();
 		bool overflow = false;
-		sort(cargo.begin(), cargo.end());
+		// how long is travel
+		time_t time_in_flight = 0;
+		vector<pair<string, int>> other_airports = (*airport_).get_other_airports_list();
+		auto j = other_airports.begin(), j_end = other_airports.end();
+		while (j != j_end && destination_airport != (*j).first) { ++j; }
+		if (j == j_end) std::cerr << "Schedule|sending_planes|destination airport isn't found" << endl;
+		else time_in_flight = (time_t)((*j).second * 3600);
+		// DEBUG
+		//cout << "DEBUG|time_in_flight value:" << time_in_flight << endl;
+		// DEBUG
+		// insert
+		sort(cargo.begin(), cargo.end(), compare); //!!!
 		auto c = cargo.begin(), c_end = cargo.end();
 		while (c != c_end && !overflow) { // cycle by urgent cargo
-			if ((*c).check() == "urgent" && (*c).get_arr_ap() == destination_airport) {
-				if ((*i).add_cargo(free_payload, (*c).get_weight(), *c)) { (*c).change_erase_value(); }
+			if ((*c)->check() == "urgent" && (*c)->get_arr_ap() == destination_airport) {
+				if ((*i).add_cargo(free_payload, (*c)->get_weight(), *c)) {
+					// DEBUG
+					//cout << "DEBUG|deadline_time value:" << ((UrgentCargo*)(*c))->get_deadline() << endl;
+					// DEBUG
+					if (time_in_flight > ((UrgentCargo*)(*c))->get_deadline()) cout << "The cargo #" << (*c)->get_num() << " is delayed! (in air)" << endl;
+					(*c)->change_erase_value();}
 				else overflow = true;
 			}
 			++c;
 		}
 		if (free_payload <= (0.25 * initial_payload)) {
-			time_t time_in_flight = 0;
 			(*i).change_flight_status(1);
 			//start flight
-			vector<pair<string, int>> other_airports = (*airport_).get_other_airports_list();
-			auto j = other_airports.begin(), j_end = other_airports.end();
-			while (j != j_end && destination_airport != (*j).first) { ++j; }
-			if (j == j_end) std::cerr << "Schedule|sending_planes|destination airport isn't found" << endl;
-			else {
-				time_in_flight = (time_t)((*j).second * 3600);
-				add_flight((*airport_).get_name(), destination_airport,
+			add_flight((*airport_).get_name(), destination_airport,
 					global_time, global_time + time_in_flight, (*i).get_num());
-				add_plane((*i), time_in_flight);
-			}
+			add_plane((*i), time_in_flight);
 			//start flight
 		}
 		else {
 			overflow = false;
 			c = cargo.begin(); c_end = cargo.end();
 			while (c != c_end && !overflow) {
-				if ((*c).check() == "ordinary" && (*c).get_arr_ap() == destination_airport) {
-					if ((*i).add_cargo(free_payload, (*c).get_weight(), *c)) { (*c).change_erase_value(); }
+				if ((*c)->check() == "ordinary" && (*c)->get_arr_ap() == destination_airport) {
+					if ((*i).add_cargo(free_payload, (*c)->get_weight(), *c)) { (*c)->change_erase_value(); }
 					else overflow = true;
 				}
 				++c;
 			}
 			if (free_payload <= (0.25 * initial_payload)) {
-				time_t time_in_flight = 0;
 				(*i).change_flight_status(1);
-				//start flight
-				vector<pair<string, int>> other_airports = (*airport_).get_other_airports_list();
-				auto j = other_airports.begin(), j_end = other_airports.end();
-				while (j != j_end && destination_airport != (*j).first) { ++j; }
-				if (j == j_end) std::cerr << "Schedule|sending_planes|destination airport isn't found" << endl;
-				else {
-					time_in_flight = (time_t)((*j).second * 3600);
-					add_flight((*airport_).get_name(), destination_airport,
+				add_flight((*airport_).get_name(), destination_airport,
 						global_time, global_time + time_in_flight, (*i).get_num());
-					add_plane((*i), time_in_flight);
-				}
+				add_plane((*i), time_in_flight);
 				//start flight
 			}
 		}
@@ -159,3 +169,5 @@ void Schedule::sending_planes(time_t global_time) {
 	(*airport_).set_cargo_list(cargo);
 	}
 }
+
+bool compare(OrdinaryCargo* i, OrdinaryCargo* j) { return (i->operator<(*j)); }

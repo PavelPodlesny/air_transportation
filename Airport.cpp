@@ -1,6 +1,6 @@
 #include "Airport.h"
 
-Airport::Airport(string name, vector<OrdinaryCargo>& cargo,
+Airport::Airport(string name, vector<OrdinaryCargo*>& cargo,
 	vector<Airplane>& airplanes, vector<pair<string, int>>& other_airports){
 	this->name = (check_ap(name)) ? (name) : ("invalid");
 	this->cargo = cargo;
@@ -10,29 +10,29 @@ Airport::Airport(string name, vector<OrdinaryCargo>& cargo,
 
 string Airport::get_name() const { return name; }
 
-vector<OrdinaryCargo> const& Airport::get_cargo_list() { return cargo; }
+vector<OrdinaryCargo*> const& Airport::get_cargo_list() const { return cargo; }
 
-vector<Airplane> const& Airport::get_airplanes_list() { return airplanes; }
+vector<Airplane> const& Airport::get_airplanes_list() const { return airplanes; }
 
-vector<pair<string, int>> const& Airport::get_other_airports_list() { return other_airports; }
+vector<pair<string, int>> const& Airport::get_other_airports_list() const { return other_airports; }
 
-void Airport::set_cargo_list(vector<OrdinaryCargo>& cargo_) { cargo = cargo_; }
+void Airport::set_cargo_list(vector<OrdinaryCargo*>& cargo_) { cargo = cargo_; }
 
 void Airport::set_airplanes_list(vector<Airplane>& airplanes_) { airplanes = airplanes_; }
 
 void Airport::set_other_airports_list(vector<pair<string, int>>& other_airports_) { other_airports = other_airports_; }
 
 void Airport::add_cargo(int& global_cargo_count, time_t global_time){
-	srand(time(0));
+	srand((unsigned	 int)time(nullptr));
 	string arrival_airport;
 	double cargo_weight;
 	int count_cargo = (rand() % 5) + 1;
 	int count_or_cargo = (rand() % 5) + 1;
-	int count_ur_cargo = count_cargo - count_or_cargo;
+	int count_ur_cargo = 1 + count_cargo - count_or_cargo; //
 	for (int i = 0; i < count_or_cargo; ++i) {
 		cargo_weight = (rand() % 61) + 40;
 		arrival_airport = other_airports[rand()%(other_airports.size())].first; //other
-		OrdinaryCargo new_cargo(global_cargo_count, cargo_weight,
+		OrdinaryCargo* new_cargo = new OrdinaryCargo(global_cargo_count, cargo_weight,
 			name, arrival_airport, name, global_time);
 		cargo.push_back(new_cargo);
 		global_cargo_count++;
@@ -42,7 +42,7 @@ void Airport::add_cargo(int& global_cargo_count, time_t global_time){
 		cargo_weight = (rand() % 61) + 40;
 		arrival_airport = other_airports[rand() % (other_airports.size())].first;
 		time_deadline = (time_t)(3600 * (rand() % 3 + 4));
-		UrgentCargo new_cargo(global_cargo_count, cargo_weight,
+		OrdinaryCargo* new_cargo = new UrgentCargo(global_cargo_count, cargo_weight,
 			name, arrival_airport, name, global_time,
 			time_deadline);
 		cargo.push_back(new_cargo);

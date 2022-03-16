@@ -20,9 +20,9 @@ public:
 	time_t get_arr_time() const;
 	int get_airplane_num() const;
 	//time_t time_in_flight() const;
-	bool get_erase_value();
+	bool get_erase_value() const;
 	void change_erase_value();
 };
-bool pred_for_flight(Flight& flight);
+bool pred_for_flight(Flight const& flight);
 #endif
 
