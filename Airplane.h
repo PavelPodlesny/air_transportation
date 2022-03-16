@@ -1,6 +1,6 @@
 #ifndef AIRPLANE
 #define AIRPLANE
-#include "OrdinaryCargo.h"
+#include "Cargo.h"
 class Airplane
 {
 private:

@@ -1,6 +1,6 @@
 #ifndef AIRPORT
 #define AIRPORT
-#include "OrdinaryCargo.h"
+#include "Cargo.h"
 #include "Airplane.h"
 class Airport
 {

@@ -1,7 +1,7 @@
 // air_travel.cpp : This file contains the 'main' function. Program execution begins and ends there.
 //
 #include "Flight.h"
-#include "OrdinaryCargo.h"
+#include "Cargo.h"
 #include "Airplane.h"
 #include "Airport.h"
 #include "Schedule.h"
