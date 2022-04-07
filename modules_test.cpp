@@ -159,7 +159,7 @@ void Schedule_test() {
     Airplane airbus_2(2, 400, cargo, "MMK", "SVO", "SVO", false);
     planes.push_back(airbus_2); airports.push_back({"SVO", 5});
     Airport MMK("MMK", cargo, planes, airports);
-    // crtate schedule
+    // create schedule
     vector<Airport> AirPorts{ SVO, MMK }; vector<Flight>flight_list;
     vector<pair<Airplane, time_t>>planes_in_air;
     Schedule simple_schedule(AirPorts, flight_list, planes_in_air);
@@ -193,10 +193,60 @@ void Schedule_test() {
         for (auto i = (*j).get_cargo_list().begin(); i != (*j).get_cargo_list().end(); ++i) delete (*i);
     }
 }
+void Simple_model() {
+    time_t Global_Time = time(NULL);
+    int Global_cargo_count = 1;
+    vector<OrdinaryCargo*> cargo;
+    //create two new airports
+    Airplane airbus_1(1, 300, cargo, "SVO", "MMK", "MMK", false);
+    vector<Airplane> planes{ airbus_1 };
+    vector<pair<string, int>> airports{ { "MMK", 5 } };
+    Airport SVO("SVO", cargo, planes, airports);
+    planes.clear(); airports.clear();
+    //
+    Airplane airbus_2(2, 400, cargo, "MMK", "SVO", "SVO", false);
+    planes.push_back(airbus_2); airports.push_back({ "SVO", 5 });
+    Airport MMK("MMK", cargo, planes, airports);
+    // create schedule
+    vector<Airport> AirPorts{ SVO, MMK }; vector<Flight>flight_list;
+    vector<pair<Airplane, time_t>>planes_in_air;
+    Schedule simple_schedule(AirPorts, flight_list, planes_in_air);
+
+    simple_schedule.add_cargo(Global_cargo_count, Global_Time);
+    Global_Time += (time_t)3600;
+  
+    size_t total_number_of_airplanes = 2;
+    string end_of_simulation = "next";
+    while (end_of_simulation == "next") {
+        int waiting_time = 0;
+        cout << endl << "Please, enter waiting time in hours." << endl;
+        cin >> waiting_time;
+        for (int i = 0; i < waiting_time; ++i) {
+            simple_schedule.add_cargo(Global_cargo_count, Global_Time);
+            size_t number_airplanes_in_air = (simple_schedule.get_planes_in_air_list()).size();
+            if (total_number_of_airplanes != number_airplanes_in_air) {
+                simple_schedule.sending_planes(Global_Time);
+            }
+            Global_Time += 3600;
+            simple_schedule.wait_one_hour();
+        }
+        char buf_[26];
+        ctime_s(buf_, sizeof(buf_), &Global_Time); buf_[24] = '\0';
+        cout << "TIME: " << setw(24) << buf_ << endl;
+        cout << "SCHEDULE:" << endl;
+        simple_schedule.print();
+        cout << endl << "Please, enter 'next' if you want to end the simulation or 'end' if you want to continue." << endl;
+        cin >> end_of_simulation;
+    }
+}
 int main()
 {
 //#define TEST
-#define DEBUG
+#define MODEL
+#ifdef  MODEL
+    Simple_model();
+#endif //  MODEL
+
 #ifdef DEBUG
     Cargo_test();
     Flight_test();
@@ -204,6 +254,7 @@ int main()
     Airport_test();
     Schedule_test();
 #endif
+
 #ifdef TEST
     Test();
 #endif
