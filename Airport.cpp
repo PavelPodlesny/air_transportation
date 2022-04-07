@@ -22,7 +22,7 @@ void Airport::set_airplanes_list(vector<Airplane>& airplanes_) { airplanes = air
 
 void Airport::set_other_airports_list(vector<pair<string, int>>& other_airports_) { other_airports = other_airports_; }
 
-void Airport::add_cargo(int& global_cargo_count, time_t global_time){
+void Airport::add_cargo(int* global_cargo_count, time_t global_time){
 	srand((unsigned	 int)time(nullptr));
 	string arrival_airport;
 	double cargo_weight;
@@ -32,21 +32,21 @@ void Airport::add_cargo(int& global_cargo_count, time_t global_time){
 	for (int i = 0; i < count_or_cargo; ++i) {
 		cargo_weight = (rand() % 61) + 40;
 		arrival_airport = other_airports[rand()%(other_airports.size())].first; //other
-		OrdinaryCargo* new_cargo = new OrdinaryCargo(global_cargo_count, cargo_weight,
+		OrdinaryCargo* new_cargo = new OrdinaryCargo(*global_cargo_count, cargo_weight,
 			name, arrival_airport, name, global_time);
 		cargo.push_back(new_cargo);
-		global_cargo_count++;
+		(*global_cargo_count)++;
 	}
 	time_t time_deadline;
 	for (int i = 0; i < count_ur_cargo; ++i) {
 		cargo_weight = (rand() % 61) + 40;
 		arrival_airport = other_airports[rand() % (other_airports.size())].first;
 		time_deadline = (time_t)(3600 * (rand() % 3 + 4));
-		OrdinaryCargo* new_cargo = new UrgentCargo(global_cargo_count, cargo_weight,
+		OrdinaryCargo* new_cargo = new UrgentCargo(*global_cargo_count, cargo_weight,
 			name, arrival_airport, name, global_time,
 			time_deadline);
 		cargo.push_back(new_cargo);
-		global_cargo_count++;
+		(*global_cargo_count)++;
 	}
 }
 void Airport::add_airplane(Airplane& plane) { airplanes.push_back(plane); }

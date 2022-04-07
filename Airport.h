@@ -22,7 +22,7 @@ public:
 	void set_airplanes_list(vector<Airplane>& airplanes_);
 	void set_other_airports_list(vector<pair<string, int>>& other_airports_);
 
-	void add_cargo(int& global_cargo_count, time_t global_time); // in final version change int to void 
+	void add_cargo(int* global_cargo_count, time_t global_time); // in final version change int to void 
 	void add_airplane(Airplane& plane);
 };
 #endif;

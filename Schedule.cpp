@@ -1,11 +1,26 @@
 #include "Schedule.h"
 
-Schedule::Schedule(vector<Airport>& airports, vector<Flight>& schedule, vector<pair<Airplane,
+Schedule::Schedule(time_t Global_time, vector<Airport>& airports, vector<Flight>& schedule, vector<pair<Airplane,
 	time_t>>& planes_in_air)
 {
+	this->Global_time = Global_time;
 	this->schedule = schedule;
 	this->planes_in_air = planes_in_air;
 	this->airports = airports;
+}
+
+vector<Airport> const& Schedule::get_airports_list() { return airports; }
+
+vector<Flight> const& Schedule::get_flights_list() { return schedule; }
+
+vector<pair<Airplane, time_t>> const& Schedule::get_planes_in_air_list() { return planes_in_air; }
+
+void Schedule::del_flight(int plane_num)
+{
+	auto i = schedule.begin(), end = schedule.end();
+	while (i != end && plane_num != (*i).get_airplane_num()) ++i;
+	if (i == end) std::cerr << "Schedule|del_flight|plane isn't found" << endl;
+	else schedule.erase(i);
 }
 
 void Schedule::add_flight(string dep_ap, string arr_ap, time_t dep_time, time_t arr_time, int plane_num)
@@ -20,10 +35,10 @@ void Schedule::add_plane(Airplane& plane, time_t time_in_flight)
 	planes_in_air.push_back(air_travel);
 }
 
-void Schedule::add_cargo(int& global_cargo_count, time_t global_time){
-	int cargo_count=0;
-	for (auto i = airports.begin(); i != airports.end(); ++i) {
-		(*i).add_cargo(global_cargo_count, global_time);
+extern "C" {
+void Schedule::add_cargo(int* global_cargo_count){
+		for (auto i = airports.begin(); i != airports.end(); ++i) {
+		(*i).add_cargo(global_cargo_count, Global_time);
 	}
 }
 
@@ -45,6 +60,7 @@ void Schedule::landing_plane(Airplane& plane){
 }
 
 void Schedule::wait_one_hour(){
+	Global_time += 3600;
 	auto i = planes_in_air.begin(), end = planes_in_air.end();
 	for (i; i != end; ++i) {
 		(*i).second -= (time_t)(3600);
@@ -88,20 +104,11 @@ void Schedule::print() {
 	}
 }
 
-vector<Airport> const& Schedule::get_airports_list() { return airports; }
+size_t Schedule::get_global_time() { return (size_t)Global_time; }
+size_t Schedule::get_size_planes_in_air_list() { return planes_in_air.size(); }
 
-vector<Flight> const& Schedule::get_flights_list() { return schedule; }
-
-vector<pair<Airplane, time_t>> const& Schedule::get_planes_in_air_list() { return planes_in_air; }
-
-void Schedule::del_flight(int plane_num)
-{
-	auto i = schedule.begin(), end = schedule.end();
-	while (i != end && plane_num != (*i).get_airplane_num()) ++i;
-	if (i == end) std::cerr << "Schedule|del_flight|plane isn't found" << endl;
-	else schedule.erase(i);
-}
-void Schedule::sending_planes(time_t global_time) {
+void Schedule::sending_planes() {
+	time_t global_time = this->Global_time;
 	for(auto airport_ = airports.begin(); airport_!=airports.end(); ++airport_){
 	vector <Airplane> airplanes = (*airport_).get_airplanes_list();
 	vector <OrdinaryCargo*> cargo = (*airport_).get_cargo_list();
@@ -168,6 +175,26 @@ void Schedule::sending_planes(time_t global_time) {
 	(*airport_).set_airplanes_list(airplanes);
 	(*airport_).set_cargo_list(cargo);
 	}
+}
+
+Schedule* create_schedule() {
+	vector<OrdinaryCargo*> cargo;
+	//create two new airports
+	Airplane airbus_one(1, 300, cargo, "SVO", "MMK", "MMK", false);
+	vector<Airplane> planes{ airbus_one };
+	vector<pair<string, int>> airports{ { "MMK", 5 } };
+	Airport SVO("SVO", cargo, planes, airports);
+	planes.clear(); airports.clear();
+	//
+	Airplane airbus_two(2, 400, cargo, "MMK", "SVO", "SVO", false);
+	planes.push_back(airbus_two); airports.push_back({ "SVO", 5 });
+	Airport MMK("MMK", cargo, planes, airports);
+	// create schedule
+	vector<Airport> AirPorts{ SVO, MMK }; vector<Flight> flight_list;
+	vector<pair<Airplane, time_t>> planes_in_air;
+	return new Schedule(time(NULL), AirPorts, flight_list, planes_in_air);
+}
+void delete_schedule(Schedule* schedule) { delete schedule; }
 }
 
 bool compare(OrdinaryCargo* i, OrdinaryCargo* j) { return (i->operator<(*j)); }
