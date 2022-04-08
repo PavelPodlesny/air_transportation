@@ -1,5 +1,4 @@
 #include "Cargo.h"
-
 /*bool check_time(string const& t) {
 	bool valid = true;
 	if (t.size() == 5) {

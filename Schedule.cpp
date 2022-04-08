@@ -35,7 +35,6 @@ void Schedule::add_plane(Airplane& plane, time_t time_in_flight)
 	planes_in_air.push_back(air_travel);
 }
 
-extern "C" {
 void Schedule::add_cargo(int* global_cargo_count){
 		for (auto i = airports.begin(); i != airports.end(); ++i) {
 		(*i).add_cargo(global_cargo_count, Global_time);
@@ -177,24 +176,36 @@ void Schedule::sending_planes() {
 	}
 }
 
-Schedule* create_schedule() {
-	vector<OrdinaryCargo*> cargo;
-	//create two new airports
-	Airplane airbus_one(1, 300, cargo, "SVO", "MMK", "MMK", false);
-	vector<Airplane> planes{ airbus_one };
-	vector<pair<string, int>> airports{ { "MMK", 5 } };
-	Airport SVO("SVO", cargo, planes, airports);
-	planes.clear(); airports.clear();
-	//
-	Airplane airbus_two(2, 400, cargo, "MMK", "SVO", "SVO", false);
-	planes.push_back(airbus_two); airports.push_back({ "SVO", 5 });
-	Airport MMK("MMK", cargo, planes, airports);
-	// create schedule
-	vector<Airport> AirPorts{ SVO, MMK }; vector<Flight> flight_list;
-	vector<pair<Airplane, time_t>> planes_in_air;
-	return new Schedule(time(NULL), AirPorts, flight_list, planes_in_air);
-}
-void delete_schedule(Schedule* schedule) { delete schedule; }
-}
-
 bool compare(OrdinaryCargo* i, OrdinaryCargo* j) { return (i->operator<(*j)); }
+
+extern "C" {
+	void dll_AddCargo(Schedule* schedule, int* glb) { schedule->add_cargo(glb); }
+	void dll_SendingPlanes(Schedule* schedule) { schedule->sending_planes(); }
+	void dll_WaitOneHour(Schedule* schedule) { schedule->wait_one_hour(); }
+	void dll_Print(Schedule* schedule) { schedule->print(); }
+	void dll_DeleteSchedule(Schedule* schedule) { delete schedule; };
+	Schedule* dll_CreateSchedule() {
+		vector<OrdinaryCargo*> cargo;
+		//create two new airports
+		Airplane airbus_one(1, 300, cargo, "SVO", "MMK", "MMK", false);
+		vector<Airplane> planes{ airbus_one };
+		vector<pair<string, int>> airports{ { "MMK", 5 } };
+		Airport SVO("SVO", cargo, planes, airports);
+		planes.clear(); airports.clear();
+		//
+		Airplane airbus_two(2, 400, cargo, "MMK", "SVO", "SVO", false);
+		planes.push_back(airbus_two); airports.push_back({ "SVO", 5 });
+		Airport MMK("MMK", cargo, planes, airports);
+		// create schedule
+		vector<Airport> AirPorts{ SVO, MMK }; vector<Flight> flight_list;
+		vector<pair<Airplane, time_t>> planes_in_air;
+		return new Schedule(time(NULL), AirPorts, flight_list, planes_in_air);
+	}
+	size_t dll_PrintTime(Schedule* schedule) {
+		char buf_[26];
+		time_t temp = (time_t)(schedule->get_global_time());
+		ctime_s(buf_, sizeof(buf_), &temp); buf_[24] = '\0';
+		cout << "TIME: " << setw(24) << buf_ << endl;
+	}
+	size_t dll_GetCountPlanesInAir(Schedule* schedule) { return schedule->get_size_planes_in_air_list(); }
+}

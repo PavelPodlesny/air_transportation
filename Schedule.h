@@ -1,7 +1,15 @@
 #ifndef SCHEDULE
 #define SCHEDULE
+
+/*#ifdef DLL_AIR_TRANSPORTATION_EXPORT
+#define DLL_API __declspec(dllexport)
+#else
+#define DLL_API __declspec(dllimport)
+#endif*/
+
 #include "Airport.h"
 #include "Flight.h"
+
 class Schedule
 {
 private:
@@ -25,7 +33,6 @@ public:
 	vector<pair<Airplane, time_t>> const& get_planes_in_air_list();
 	size_t get_global_time();
 	size_t get_size_planes_in_air_list();
-	
 };
 bool compare(OrdinaryCargo* i, OrdinaryCargo* j);
 #endif
