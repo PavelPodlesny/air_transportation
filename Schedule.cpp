@@ -36,7 +36,7 @@ void Schedule::add_plane(Airplane& plane, time_t time_in_flight)
 }
 
 void Schedule::add_cargo(int* global_cargo_count){
-		for (auto i = airports.begin(); i != airports.end(); ++i) {
+	for (auto i = airports.begin(); i != airports.end(); ++i) {
 		(*i).add_cargo(global_cargo_count, Global_time);
 	}
 }
@@ -58,8 +58,10 @@ void Schedule::landing_plane(Airplane& plane){
 	}
 }
 
-void Schedule::wait_one_hour(){
+void Schedule::wait_one_hour(char*error_message, int* delayed_cargo, int size){
 	Global_time += 3600;
+	int actual_size = 0;
+	bool flag = 0;
 	auto i = planes_in_air.begin(), end = planes_in_air.end();
 	for (i; i != end; ++i) {
 		(*i).second -= (time_t)(3600);
@@ -71,42 +73,66 @@ void Schedule::wait_one_hour(){
 		for (auto j = (*i).get_cargo_list().begin(); j != (*i).get_cargo_list().end(); ++j) {
 			if ((*j)->check() == "urgent")
 				if ( ((UrgentCargo*)(*j))->is_delayed() ) {
-					cout << "The cargo #" << (*j)->get_num() << " is delayed (on land)!" << endl;
+					if (actual_size < size) {
+						(*delayed_cargo) = (*j)->get_num();
+						delayed_cargo++;
+						actual_size++;
+					}
+					else{if (!flag) { flag = 1; strcpy_s(error_message, strlen(error_message), "Schedule|wait_one_hour|buffer is overload"); }}
 				}
 		}
 	}
+	delayed_cargo -= actual_size;
 }
 
-void Schedule::print() {
+void Schedule::print(char* error_message, char* text_schedule, int size) {
+	//lenght_of_buffer = 132; (65*2 = data) + '|' + '\0'
+	bool overload = false;
+	int actual_size = size;
 	int count = 1;
-	cout << setw(9) << left << "Flight #";
+	/*cout << setw(9) << left << "Flight #";
 	cout << setw(19) << "Departure airport";
 	cout << setw(15) << right << "Arrival airport" << " ";
 	cout << setw(5) << " " << "Departure time" << setw(5) << " ";
 	cout << "	";
 	cout << setw(6) << " " << "Arrival time" << setw(6) << " ";
 	cout << "	";
-	cout << setw(12) << "Plane number" << endl;
+	cout << setw(12) << "Plane number" << endl;*/
+	auto i = schedule.begin();
 	char buf[26];
-	for (auto i = schedule.begin(); i != schedule.end(); ++i) {
-		cout << setw(9) << left << count;
-		cout << setw(8) << " " << (*i).get_dep_ap() << setw(8) << " ";
-		cout << setw(6) << " " << (*i).get_arr_ap() << setw(7) << " ";
+	while( !overload && (i != schedule.end()) ){
+		string cpp_string = std::to_string(count) + ';';
+		const char* c_string = (cpp_string.c_str());
+		strcpy_s(text_schedule, strlen(text_schedule), c_string);
+		cpp_string = (*i).get_dep_ap() + ';';
+		c_string = (cpp_string.c_str());
+		strcat_s(text_schedule, strlen(text_schedule), c_string);
+		cpp_string = (*i).get_arr_ap() + ';';
+		c_string = (cpp_string.c_str());
+		strcat_s(text_schedule, strlen(text_schedule), c_string);
 		time_t time_ = (*i).get_dep_time();
-		ctime_s(buf, sizeof(buf), &time_); buf[24] = '\0';
-		cout << setw(24) << buf << "	";
+		ctime_s(buf, sizeof(buf), &time_); buf[24] = ';';
+		strcat_s(text_schedule, strlen(text_schedule), buf);
 		time_ = (*i).get_arr_time();
-		ctime_s(buf, sizeof(buf), &time_); buf[24] = '\0';
-		cout << setw(24) << buf << "	";
-		cout << setw(5) << " " << (*i).get_airplane_num() << setw(5) << " " <<endl;
+		ctime_s(buf, sizeof(buf), &time_); buf[24] = ';';
+		strcat_s(text_schedule, strlen(text_schedule), buf);
+		cpp_string = std::to_string((*i).get_airplane_num()) + '|';
+		c_string = (cpp_string.c_str());
+		strcat_s(text_schedule, strlen(text_schedule), c_string);
 		count++;
+		++i;
+		actual_size -= 66;
+		if (actual_size < 66) { overload = true; strcpy_s(error_message, strlen(error_message), "Schedule|print|buffer is overload"); }
 	}
+	text_schedule[size - 1] = '\0';
 }
 
 size_t Schedule::get_global_time() { return (size_t)Global_time; }
 size_t Schedule::get_size_planes_in_air_list() { return planes_in_air.size(); }
 
-void Schedule::sending_planes() {
+void Schedule::sending_planes(char* error_line, int* delayed_cargo, int size) {
+	bool flag = 0;
+	int actual_size = 0;
 	time_t global_time = this->Global_time;
 	for(auto airport_ = airports.begin(); airport_!=airports.end(); ++airport_){
 	vector <Airplane> airplanes = (*airport_).get_airplanes_list();
@@ -120,7 +146,10 @@ void Schedule::sending_planes() {
 		vector<pair<string, int>> other_airports = (*airport_).get_other_airports_list();
 		auto j = other_airports.begin(), j_end = other_airports.end();
 		while (j != j_end && destination_airport != (*j).first) { ++j; }
-		if (j == j_end) std::cerr << "Schedule|sending_planes|destination airport isn't found" << endl;
+		if (j == j_end) {
+			const char error_message[] = "Schedule|sending_planes|destination airport isn't found";
+			strcpy_s(error_line, strlen(error_line), error_message);
+		}
 		else time_in_flight = (time_t)((*j).second * 3600);
 		// DEBUG
 		//cout << "DEBUG|time_in_flight value:" << time_in_flight << endl;
@@ -134,12 +163,21 @@ void Schedule::sending_planes() {
 					// DEBUG
 					//cout << "DEBUG|deadline_time value:" << ((UrgentCargo*)(*c))->get_deadline() << endl;
 					// DEBUG
-					if (time_in_flight > ((UrgentCargo*)(*c))->get_deadline()) cout << "The cargo #" << (*c)->get_num() << " is delayed! (in air)" << endl;
+					if (time_in_flight > ((UrgentCargo*)(*c))->get_deadline()) {
+
+						if(actual_size<size){
+							(*delayed_cargo) = (*c)->get_num();
+							delayed_cargo++;
+							actual_size++;
+						}
+						else { if (!flag) { flag = 1; strcat_s(error_line, strlen(error_line), "\nSchedule|sending_planes|buffer is overload"); } }
+					}
 					(*c)->change_erase_value();}
 				else overflow = true;
 			}
 			++c;
 		}
+		delayed_cargo -= actual_size;
 		if (free_payload <= (0.25 * initial_payload)) {
 			(*i).change_flight_status(1);
 			//start flight
@@ -179,12 +217,13 @@ void Schedule::sending_planes() {
 bool compare(OrdinaryCargo* i, OrdinaryCargo* j) { return (i->operator<(*j)); }
 
 extern "C" {
-	void dll_AddCargo(Schedule* schedule, int* glb) { schedule->add_cargo(glb); }
-	void dll_SendingPlanes(Schedule* schedule) { schedule->sending_planes(); }
-	void dll_WaitOneHour(Schedule* schedule) { schedule->wait_one_hour(); }
-	void dll_Print(Schedule* schedule) { schedule->print(); }
-	void dll_DeleteSchedule(Schedule* schedule) { delete schedule; };
-	Schedule* dll_CreateSchedule() {
+	 void dll_AddCargo(Schedule* schedule, int* glb) { schedule->add_cargo(glb); }
+	 void dll_SendingPlanes(Schedule* schedule, char* error_message, int* delayed_cargo, int size){
+		schedule->sending_planes(error_message, delayed_cargo, size); }
+	 void dll_WaitOneHour(Schedule* schedule, char* error_message, int* delayed_cargo, int size) { schedule->wait_one_hour(error_message, delayed_cargo, size); }
+	 void dll_Print(Schedule* schedule, char* error_message, char* text_schedule, int size) { schedule->print(error_message, text_schedule, size); } // NEED CHANGE!!!
+	 void dll_DeleteSchedule(Schedule* schedule) { delete schedule; };
+	 Schedule* dll_CreateSchedule() {
 		vector<OrdinaryCargo*> cargo;
 		//create two new airports
 		Airplane airbus_one(1, 300, cargo, "SVO", "MMK", "MMK", false);
@@ -201,11 +240,6 @@ extern "C" {
 		vector<pair<Airplane, time_t>> planes_in_air;
 		return new Schedule(time(NULL), AirPorts, flight_list, planes_in_air);
 	}
-	size_t dll_PrintTime(Schedule* schedule) {
-		char buf_[26];
-		time_t temp = (time_t)(schedule->get_global_time());
-		ctime_s(buf_, sizeof(buf_), &temp); buf_[24] = '\0';
-		cout << "TIME: " << setw(24) << buf_ << endl;
-	}
-	size_t dll_GetCountPlanesInAir(Schedule* schedule) { return schedule->get_size_planes_in_air_list(); }
+	 size_t dll_PrintTime(Schedule* schedule) { return (size_t)(schedule->get_global_time());}
+	 int dll_GetCountPlanesInAir(Schedule* schedule) { return (int)(schedule->get_size_planes_in_air_list()); }
 }
