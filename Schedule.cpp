@@ -87,10 +87,20 @@ void Schedule::landing_plane(Airplane& plane){
 	}
 }
 
-void Schedule::wait_one_hour(char*error_message, int* delayed_cargo, int size){
+void Schedule::wait_one_hour(char* error_message, int* delayed_cargo, int size){
+	// set delayed_cargo array to first zero position 
+	bool overload = 0;
+	int occupied_size = 0;
+	int j = 0;
+	while (j < size && delayed_cargo[j] != 0) { ++j; }
+	if (j == size) {
+		strcpy_s(error_message, small_char_buff_size, "Schedule|wait_one_hour|buffer is overload");
+		occupied_size = size;  overload = 1;
+	}
+	else { delayed_cargo += j; occupied_size += j; }
+	//
 	Global_time += 3600;
-	int actual_size = 0;
-	bool flag = 0;
+	//landing planes
 	auto i = planes_in_air.begin(), end = planes_in_air.end();
 	for (i; i != end; ++i) {
 		(*i).second -= (time_t)(3600);
@@ -102,16 +112,16 @@ void Schedule::wait_one_hour(char*error_message, int* delayed_cargo, int size){
 		for (auto j = (*i).get_cargo_list().begin(); j != (*i).get_cargo_list().end(); ++j) {
 			if ((*j)->check() == "urgent")
 				if ( ((UrgentCargo*)(*j))->is_delayed() ) {
-					if (actual_size < size) {
+					if (occupied_size < size) {
 						(*delayed_cargo) = (*j)->get_num();
 						delayed_cargo++;
-						actual_size++;
+						occupied_size++;
 					}
-					else{if (!flag) { flag = 1; strcpy_s(error_message, small_char_buff_size, "Schedule|wait_one_hour|buffer is overload"); }}
+					else{if (!overload) { overload = 1; strcpy_s(error_message, small_char_buff_size, "Schedule|wait_one_hour|buffer is overload"); }}
 				}
 		}
 	}
-	delayed_cargo -= actual_size;
+	
 }
 
 void Schedule::print(char* error_message, char* text_schedule, int size) {
@@ -158,8 +168,17 @@ size_t Schedule::get_global_time() { return (size_t)Global_time; }
 size_t Schedule::get_size_planes_in_air_list() { return planes_in_air.size(); }
 
 void Schedule::sending_planes(char* error_line, int* delayed_cargo, int size) {
-	bool flag = 0;
-	int actual_size = 0;
+	// set delayed_cargo array to first zero position 
+	bool overload = 0;
+	int occupied_size = 0;
+	int k = 0;
+	while (k < size && delayed_cargo[k] != 0) { ++k; }
+	if (k == size) {
+		strcpy_s(error_line, small_char_buff_size, "Schedule|sending_planes|buffer is overload");
+		occupied_size = size;  overload = 1;
+	}
+	else { delayed_cargo += k; occupied_size += k; }
+	//
 	time_t global_time = this->Global_time;
 	for(auto airport_ = airports.begin(); airport_!=airports.end(); ++airport_){
 	vector <Airplane> airplanes = (*airport_).get_airplanes_list();
@@ -192,19 +211,19 @@ void Schedule::sending_planes(char* error_line, int* delayed_cargo, int size) {
 					// DEBUG
 					if (time_in_flight > ((UrgentCargo*)(*c))->get_deadline()) {
 
-						if(actual_size<size){
+						if(occupied_size < size){
 							(*delayed_cargo) = (*c)->get_num();
 							delayed_cargo++;
-							actual_size++;
+							occupied_size++;
 						}
-						else { if (!flag) { flag = 1; strcat_s(error_line, small_char_buff_size, "\nSchedule|sending_planes|buffer is overload"); } }
+						else { if (!overload) { overload = 1; strcat_s(error_line, small_char_buff_size, "\nSchedule|sending_planes|buffer is overload"); } }
 					}
 					(*c)->change_erase_value();}
 				else overflow = true;
 			}
 			++c;
 		}
-		delayed_cargo -= actual_size;
+		//delayed_cargo -= actual_size;
 		if (free_payload <= (0.25 * initial_payload)) {
 			(*i).change_flight_status(1);
 			//start flight
