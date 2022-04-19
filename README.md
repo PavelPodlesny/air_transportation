@@ -1,4 +1,4 @@
 # air_transportation
 Project of Pavel Podlesny for successful complete of OOP course.
-At the moment first part of the project is uploaded.
-I developed class OrdinaryCargo and tested it in air_travel.cpp.
+Microsoft Visual Studio Community 2022 (64-bit), actual version.
+Python 3.10.0 [MSC v.1929 64 bit (AMD64)] on win32, IDLE 3.10.0 (64 bit).
