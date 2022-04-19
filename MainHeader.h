@@ -10,6 +10,8 @@
 #include <algorithm>
 #include <iomanip>
 #include <string.h>
+#include <stdlib.h>     // for _countof
+#include <stdio.h>  
 using std::stoi;
 using std::endl;
 using std::cin;
