@@ -271,18 +271,29 @@ extern "C" {
 	 void dll_DeleteSchedule(Schedule* schedule) { delete schedule; };
 	 Schedule* dll_CreateSchedule() {
 		vector<OrdinaryCargo*> cargo;
-		//create two new airports
-		Airplane airbus_one(1, 300, cargo, "SVO", "MMK", "MMK", false);
-		vector<Airplane> planes{ airbus_one };
-		vector<pair<string, int>> airports{ { "MMK", 5 } };
+		//create SVO airport
+		Airplane airbus_1(1, 300, cargo, "SVO", "MMK", "MMK", false);
+		Airplane airbus_2(2, 400, cargo, "SVO", "OVB", "OVB", false);
+		vector<Airplane> planes{ airbus_1, airbus_2 };
+		vector<pair<string, int>> airports{ { "MMK", 2 }, {"OVB", 4}};
 		Airport SVO("SVO", cargo, planes, airports);
 		planes.clear(); airports.clear();
-		//
-		Airplane airbus_two(2, 400, cargo, "MMK", "SVO", "SVO", false);
-		planes.push_back(airbus_two); airports.push_back({ "SVO", 5 });
+		//create MMK airport
+		Airplane airbus_3(3, 350, cargo, "MMK", "SVO", "SVO", false);
+		Airplane airbus_4(4, 400, cargo, "MMK", "OVB", "OVB", false);
+		planes.push_back(airbus_3); planes.push_back(airbus_4);
+		airports.push_back({ "SVO", 2 }); airports.push_back({"OVB", 6});
 		Airport MMK("MMK", cargo, planes, airports);
+		planes.clear(); airports.clear();
+		//create OVB airport
+		Airplane airbus_5(5, 300, cargo, "OVB", "SVO", "SVO", false);
+		Airplane airbus_6(6, 350, cargo, "OVB", "MMK", "MMK", false);
+		planes.push_back(airbus_5); planes.push_back(airbus_6);
+		airports.push_back({ "SVO", 4 }); airports.push_back({ "MMK", 6 });
+		Airport OVB("OVB", cargo, planes, airports);
+		planes.clear(); airports.clear();
 		// create schedule
-		vector<Airport> AirPorts{ SVO, MMK }; vector<Flight> flight_list;
+		vector<Airport> AirPorts{ SVO, MMK, OVB }; vector<Flight> flight_list;
 		vector<pair<Airplane, time_t>> planes_in_air;
 		return new Schedule(time(NULL), AirPorts, flight_list, planes_in_air);
 	}
