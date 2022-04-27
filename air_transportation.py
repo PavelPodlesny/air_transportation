@@ -1,6 +1,9 @@
 
 from ctypes import *
 import sys
+import shutil
+width = shutil.get_terminal_size().columns
+separator = "=== ## ==="
 #print("c_void_p size: ", sys.getsizeof(c_void_p))
 cpp_dll = CDLL('C:/Users/PavelPodlesny/AppData/Local/Programs/Python/Python310/DLLs/Dll_air_transportation.dll')
 #Что нужно доделать?
@@ -42,6 +45,10 @@ cpp_dll.dll_WaitOneHour.restype = None
 #Print
 cpp_dll.dll_Print.argtypes = [c_void_p, c_char_p, c_char_p, c_int]
 cpp_dll.dll_Print.restype = None
+#PrintTime
+cpp_dll.dll_PrintTime.argtypes = [c_void_p, c_char_p]
+cpp_dll.dll_PrintTime.restype = None
+#
 #create new simple schedule
 new_schedule = cpp_dll.dll_CreateSchedule()
 #print("pointer to schedule size", sys.getsizeof(new_schedule))
@@ -51,6 +58,7 @@ user_response = "next"
 while user_response == "next":
     wait_time_ = 0
     wait_time_ = input("Please, enter waiting time in hours (integer).\nINPUT: ")
+    print("\n", separator.center(width))
     wait_time = int(wait_time_)
     if not isinstance(wait_time, int):
         print("Incorrect input. Enter integer, not negative number.")
@@ -74,12 +82,14 @@ while user_response == "next":
             if total_num_ap != number_airplanes_in_air:
                 error_message_1 = create_string_buffer(109)# message about error
                 cpp_dll.dll_SendingPlanes(new_schedule, error_message_1, delayed_cargo_1, c_arr_size)
-                ###need to end
-                #if error_message[0] != b'\x00':
-                    #print(error_message)
+                ###check error message
+                if error_message_1[0] != b'\x00':
+                    print(error_message_1.value.decode('utf-8'))
             error_message_2 = create_string_buffer(109)
             cpp_dll.dll_WaitOneHour(new_schedule, error_message_2, delayed_cargo_2, c_arr_size)
             # add check of error message
+            if error_message_2[0] != b'\x00':
+                print(error_message_2.value.decode('utf-8'))
             '''if delayed_cargo[0] != 0:
                 iterator = 0
                 print("WaitOneHour|Delayed cargo numbers:", end = " ")
@@ -88,8 +98,13 @@ while user_response == "next":
                     iterator += 1
                 print()'''
         ## end for
+        ##
         ## global cargo count
-        print("Global cargo count: ", p_GCC)
+        print("Global cargo count: ", p_GCC.contents) #for checking 
+        print("DATA and TIME:", end = " ")
+        text_time = create_string_buffer(29)
+        cpp_dll.dll_PrintTime(new_schedule, text_time)
+        print(text_time.value.decode('utf-8'), end = "")
         if delayed_cargo_1[0] != 0:
             iterator = 0
             print("Sending planes|Delayed cargo numbers:", end = " ")
@@ -104,13 +119,41 @@ while user_response == "next":
                 print(delayed_cargo_2[iterator], " ", end = " ")
                 iterator += 1
             print()
-        #print("SCHEDULE:")
+        print("\nSCHEDULE:\n")
+        str_ = "#"
+        print(str_.rjust(2), end = "")
+        str_ = "Departure airport"
+        print(str_.center(21), end = "")
+        str_ = "Arrival airport"
+        print(str_.center(17), end = "")
+        str_ = "Airplane number"
+        print(str_.center(17), end = "")
+        str_ = "Departure"
+        print(str_.center(26), end = "")
+        str_ = "Arrival"
+        print(str_.center(28))
         text_schedule = create_string_buffer(199)
         #print(type(text_schedule))
         error_message_3 = create_string_buffer(109)
         cpp_dll.dll_Print(new_schedule, error_message_3, text_schedule, c_int(200))
-        print(text_schedule.value.decode('utf-8'))#'''
-        user_response = input("Enter 'next' to continue or 'end' to finish.\nINPUT: ")
+        if error_message_3[0] != b'x00':
+            print(error_message_3.value.decode('utf-8'))
+        python_schedule = text_schedule.value.decode('utf_8')
+        schedule_records = python_schedule.split('|')
+        i = 0
+        while i < len(schedule_records)-1:
+            schedule_string = schedule_records[i].split(';')
+            print(schedule_string[0].rjust(2), end = "")
+            print(schedule_string[1].center(21), end = "")
+            print(schedule_string[2].center(17), end = "")
+            print(schedule_string[3].center(17), end = "")
+            print(schedule_string[4].center(26), end = "")
+            print(schedule_string[5].center(28))
+            i += 1
+        print("\n", separator.center(width))
+        #print(python_schedule)
+        #print(text_schedule.value.decode('utf-8'))#'''
+        user_response = input("\nEnter 'next' to continue or 'end' to finish.\nINPUT: ")
         if user_response != "next" and user_response != "end":
             print("Incorrect input. Ending...")
             user_response = "end"

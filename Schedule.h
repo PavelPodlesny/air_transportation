@@ -43,7 +43,7 @@ extern "C" {
 	__declspec(dllexport) void dll_Print(Schedule* schedule, char* error_message, char* text_schedule, int size);
 	__declspec(dllexport) void dll_DeleteSchedule(Schedule* schedule);
 	__declspec(dllexport) Schedule* dll_CreateSchedule();
-	__declspec(dllexport) size_t dll_PrintTime(Schedule* schedule);
+	__declspec(dllexport) void dll_PrintTime(Schedule* schedule, char* text_time);
 	__declspec(dllexport) int dll_GetCountPlanesInAir(Schedule* schedule);
 }
 #endif

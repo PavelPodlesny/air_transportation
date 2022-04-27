@@ -153,9 +153,9 @@ void Schedule::print(char* error_message, char* text_schedule, int size) {
 		ctime_s(buf, sizeof(buf), &time_); buf[24] = ';';
 		strcat_s(text_schedule, large_char_buff_size, buf);
 		time_ = (*i).get_arr_time();
-		ctime_s(buf, sizeof(buf), &time_); buf[24] = ';';
+		ctime_s(buf, sizeof(buf), &time_); buf[24] = ' ';
 		strcat_s(text_schedule, large_char_buff_size, buf);
-		strcat_s(text_schedule, large_char_buff_size, "\n");
+		strcat_s(text_schedule, large_char_buff_size, "|");
 		count++;
 		++i;
 		actual_size -= 66;
@@ -286,6 +286,9 @@ extern "C" {
 		vector<pair<Airplane, time_t>> planes_in_air;
 		return new Schedule(time(NULL), AirPorts, flight_list, planes_in_air);
 	}
-	 size_t dll_PrintTime(Schedule* schedule) { return (size_t)(schedule->get_global_time());}
+	 void dll_PrintTime(Schedule* schedule, char* text_time) {
+		 time_t time_ = (schedule->get_global_time());
+		 ctime_s(text_time, 30, &time_);
+	 }
 	 int dll_GetCountPlanesInAir(Schedule* schedule) { return (int)(schedule->get_size_planes_in_air_list()); }
 }
