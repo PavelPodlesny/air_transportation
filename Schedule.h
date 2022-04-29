@@ -9,7 +9,7 @@
 
 #include "Airport.h"
 #include "Flight.h"
-#define MAX_SIZE 100
+#define MAX_SIZE 200
 #define DllExport __declspec(dllexport)
 class Schedule
 {

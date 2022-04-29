@@ -1,6 +1,6 @@
 #include "Schedule.h"
 #define small_char_buff_size  110
-#define large_char_buff_size 200
+#define large_char_buff_size 500
 
 //#define TEST
 #ifdef TEST
@@ -272,22 +272,22 @@ extern "C" {
 	 Schedule* dll_CreateSchedule() {
 		vector<OrdinaryCargo*> cargo;
 		//create SVO airport
-		Airplane airbus_1(1, 300, cargo, "SVO", "MMK", "MMK", false);
-		Airplane airbus_2(2, 400, cargo, "SVO", "OVB", "OVB", false);
+		Airplane airbus_1(1, 200, cargo, "SVO", "MMK", "MMK", false);
+		Airplane airbus_2(2, 150, cargo, "SVO", "OVB", "OVB", false);
 		vector<Airplane> planes{ airbus_1, airbus_2 };
 		vector<pair<string, int>> airports{ { "MMK", 2 }, {"OVB", 4}};
 		Airport SVO("SVO", cargo, planes, airports);
 		planes.clear(); airports.clear();
 		//create MMK airport
-		Airplane airbus_3(3, 350, cargo, "MMK", "SVO", "SVO", false);
-		Airplane airbus_4(4, 400, cargo, "MMK", "OVB", "OVB", false);
+		Airplane airbus_3(3, 220, cargo, "MMK", "SVO", "SVO", false);
+		Airplane airbus_4(4, 200, cargo, "MMK", "OVB", "OVB", false);
 		planes.push_back(airbus_3); planes.push_back(airbus_4);
 		airports.push_back({ "SVO", 2 }); airports.push_back({"OVB", 6});
 		Airport MMK("MMK", cargo, planes, airports);
 		planes.clear(); airports.clear();
 		//create OVB airport
-		Airplane airbus_5(5, 300, cargo, "OVB", "SVO", "SVO", false);
-		Airplane airbus_6(6, 350, cargo, "OVB", "MMK", "MMK", false);
+		Airplane airbus_5(5, 160, cargo, "OVB", "SVO", "SVO", false);
+		Airplane airbus_6(6, 150, cargo, "OVB", "MMK", "MMK", false);
 		planes.push_back(airbus_5); planes.push_back(airbus_6);
 		airports.push_back({ "SVO", 4 }); airports.push_back({ "MMK", 6 });
 		Airport OVB("OVB", cargo, planes, airports);
