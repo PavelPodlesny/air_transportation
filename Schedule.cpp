@@ -64,10 +64,16 @@ void Schedule::add_plane(Airplane& plane, time_t time_in_flight)
 	planes_in_air.push_back(air_travel);
 }
 
-void Schedule::add_cargo(int* global_cargo_count){
-	for (auto i = airports.begin(); i != airports.end(); ++i) {
-		(*i).add_cargo(global_cargo_count, Global_time);
+int Schedule::add_cargo(int* global_cargo_count){
+	int return_value = 0;
+	try
+	{
+		for (auto i = airports.begin(); i != airports.end(); ++i) {
+			if( ((*i).add_cargo(global_cargo_count, Global_time)) == -1) throw std::exception("Cargo|invalid constructor's parameters");
+		}
 	}
+	catch (const std::exception) {return_value = -1;}
+	return return_value;
 }
 
 void Schedule::landing_plane(Airplane& plane){
@@ -263,7 +269,7 @@ void Schedule::sending_planes(char* error_line, int* delayed_cargo, int size) {
 bool compare(OrdinaryCargo* i, OrdinaryCargo* j) { return (i->operator<(*j)); }
 
 extern "C" {
-	 void dll_AddCargo(Schedule* schedule, int* glb) { schedule->add_cargo(glb); }
+	 int dll_AddCargo(Schedule* schedule, int* glb) { return(schedule->add_cargo(glb)); }
 	 void dll_SendingPlanes(Schedule* schedule, char* error_message, int* delayed_cargo, int size){
 		schedule->sending_planes(error_message, delayed_cargo, size); }
 	 void dll_WaitOneHour(Schedule* schedule, char* error_message, int* delayed_cargo, int size) { schedule->wait_one_hour(error_message, delayed_cargo, size); }

@@ -24,7 +24,7 @@ public:
 		int plane_num);
 	void del_flight(int plane_num);
 	void add_plane(Airplane& plane, time_t time_in_flight);
-	void add_cargo(int* global_cargo_count); // in final version change int to void 
+	int add_cargo(int* global_cargo_count); // in final version change int to void 
 	void sending_planes(char* error_line, int* delayed_cargo, int size);
 	void landing_plane(Airplane& plane);
 	void wait_one_hour(char* error_message, int* delayed_cargo, int size);
@@ -37,7 +37,7 @@ public:
 };
 bool compare(OrdinaryCargo* i, OrdinaryCargo* j);
 extern "C" {
-	__declspec(dllexport) void dll_AddCargo(Schedule* schedule, int* glb);
+	__declspec(dllexport) int dll_AddCargo(Schedule* schedule, int* glb);
 	__declspec(dllexport) void dll_SendingPlanes(Schedule* schedule, char* error_message, int* delayed_cargo, int size);
 	__declspec(dllexport) void dll_WaitOneHour(Schedule* schedule, char* error_message, int* delayed_cargo, int size);
 	__declspec(dllexport) void dll_Print(Schedule* schedule, char* error_message, char* text_schedule, int size);

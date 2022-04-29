@@ -14,15 +14,22 @@
 	return valid;
 }*/
 
-
 OrdinaryCargo::OrdinaryCargo(int num, double weight, string dep_ap, string arr_ap, string curr_ap, time_t time, bool erase)
 {
-	this->num = (num >= 0) ? (num) : (-1);
-	this->weight = (weight > 0 && weight <= 100) ? (weight) : (-1);
-	this->dep_ap = (check_ap(dep_ap)) ? (dep_ap) : ("invalid");
-	this->arr_ap = (check_ap(arr_ap)) ? (arr_ap) : ("invalid");
-	this->curr_ap = (check_ap(curr_ap)) ? (curr_ap) : ("invalid");
-	this->time_ = (time > 0) ? (time) : (0);
+	bool error_flag = 0;
+	if (num <= 0) error_flag = 1;
+	if (weight < 0 || weight > 100) error_flag = 1;
+	if (!check_ap(dep_ap)) error_flag = 1;
+	if (!check_ap(arr_ap)) error_flag = 1;
+	if (!check_ap(curr_ap)) error_flag = 1;
+	if (time < 0) error_flag = 1;
+	if (error_flag) throw std::exception("OrdinaryCargo|invalid constructor's parameters");
+	this->num = num;
+	this->weight = weight;
+	this->dep_ap = dep_ap;
+	this->arr_ap = arr_ap;
+	this->curr_ap = curr_ap;
+	this->time_ = time;
 	this->erase = erase;
 }
 
